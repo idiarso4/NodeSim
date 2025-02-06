@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const { User } = require('../models');
 
+// Register route
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -21,24 +22,25 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// Login route
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ where: { email } });
-
+    
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) {
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, name: user.name },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '1h' }
     );
 
     res.json({ token });

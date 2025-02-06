@@ -1,16 +1,14 @@
 const { Sequelize } = require('sequelize');
-const config = require('../config/database');
-
-const env = process.env.NODE_ENV || 'development';
-const sequelizeConfig = config[env];
+require('dotenv').config();
 
 const sequelize = new Sequelize(
-  sequelizeConfig.database, 
-  sequelizeConfig.username, 
-  sequelizeConfig.password, 
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASSWORD,
   {
-    host: sequelizeConfig.host,
-    dialect: sequelizeConfig.dialect,
+    host: process.env.DB_HOST,
+    dialect: process.env.DB_DIALECT,
+    port: process.env.DB_PORT,
     logging: false
   }
 );
@@ -18,17 +16,7 @@ const sequelize = new Sequelize(
 const db = {
   sequelize,
   Sequelize,
-  User: require('./user')(sequelize, Sequelize),
-  Attendance: require('./attendance')(sequelize, Sequelize),
-  Permission: require('./permission')(sequelize, Sequelize),
-  TeacherJournal: require('./teacherjournal')(sequelize, Sequelize)
+  User: require('./user')(sequelize)
 };
-
-// Create associations
-Object.keys(db).forEach(modelName => {
-  if (db[modelName].associate) {
-    db[modelName].associate(db);
-  }
-});
 
 module.exports = db;
